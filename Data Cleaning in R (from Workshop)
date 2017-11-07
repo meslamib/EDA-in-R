@@ -1,0 +1,518 @@
+Cleaning Data Using
+
+
+Importing data from a CSV file
+========================================================
+  
+  
+data <- read.csv("sysinfo.csv")
+head(data)
+
+
+colnames(data)
+
+
+Importing data from a CSV file
+========================================================
+  
+  
+data <- read.csv("sysinfo.csv", header = F)
+colnames(data)
+
+
+data <- read.csv("sysinfo.csv", header = T)
+colnames(data)
+
+
+Importing data from a CSV file
+========================================================
+  
+  
+data <- read.csv("sysinfo.csv", header = T)
+mode(data)
+data[1:3,1:2]
+str(data)
+
+Importing data from a CSV file
+========================================================
+  
+  
+data <- read.csv("sysinfo.csv", header = T, stringsAsFactors = F)
+head(data[,1], 3)
+head(as.Date(data[,1]), 3)
+
+
+Importing data from a CSV file
+========================================================
+  
+  
+data <- read.csv("sysinfo.csv", header = T, stringsAsFactors = F)
+head(data, 3)
+data <- read.csv("sysinfo.csv", header = T, stringsAsFactors = F, skip = 2)
+head(data, 3)
+
+
+Question: Why column names are weird?
+
+Importing data from a CSV file
+========================================================
+  
+  
+data <- read.csv("sysinfo2.csv", header = T, stringsAsFactors = F)
+colnames(data)
+
+
+
+
+data <- read.csv("sysinfo2.csv", header = T, stringsAsFactors = F, check.names = F)
+colnames(data)
+
+
+
+data <- read.csv("sysinfo2.csv", header = T, stringsAsFactors = F, check.names = F, row.names = 1)
+rownames(data)[1:5]
+
+
+
+Importing data from a txt file
+========================================================
+  
+  
+data <- read.table("Methyl_data.txt", header = T)
+colnames(data)[1:10]
+
+
+
+data <- read.table("Methyl_data.txt", header = T, check.names = F)
+colnames(data)[1:10]
+
+
+Importing data from a txt file
+========================================================
+  
+  
+data <- read.table("Methyl_data.txt", header = T, check.names = F)
+rownames(data)[1:5]
+
+
+data <- read.table("Methyl_data.txt", header = T, check.names = F, row.names = 1)
+rownames(data)[1:5]
+
+
+
+
+
+"tidyr" package
+=======================================================
+- tidyr is new package that makes it easy to "tidy" your data. 
+- Tidy data is data that is easy to work with: 
+  
+  - visualise (with ggplot2 or ggvis) and model (with R’s hundreds of modelling packages). - To tidy messy data, you first identify the variables in your dataset, then use the tools provided by tidyr to move them into columns. 
+- tidyr provides four main functions for tidying your messy data: gather(), spread(), separate(), and unite().
+
+tidyr: gather() function
+======================================================
+  There are times when our data is considered unstacked and a common attribute of concern is spread out across columns. To reformat the data such that these common attributes are gathered together as a single variable, the gather() function will take multiple columns and collapse them into key-value pairs, duplicating all other columns as needed.
+
+gather(data, key, value, ..., na.rm = FALSE)
+
+key, value: Names of new key and value columns, as strings or symbols.
+
+tidyr: gather() function
+======================================================
+  ![Outliers in a sample box-plot](gather.png)
+
+tidyr: gather() function
+======================================================
+  
+  
+library(tidyr)
+library(dplyr)
+
+# get first observation for each Species in iris data -- base R
+mini_iris <- iris[c(1, 51, 101), ]
+mini_iris
+
+
+tidyr: gather() function
+======================================================
+  
+# gather Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
+gather(mini_iris, key = flower_att, value = measurement,
+       Sepal.Length, Sepal.Width, Petal.Length, Petal.Width)
+
+
+tidyr: gather() function
+======================================================
+  
+# same result but less verbose
+gather(mini_iris, key = flower_att, value = measurement, convert= T, -Species)
+
+
+
+tidyr: spread() function
+=====================================================
+  spread() takes two columns (a key-value pair) and spreads them in to multiple columns, making “long” data wider.
+spread(data, key, value, fill = NA, convert = FALSE, drop = TRUE)
+
+key, value: Column names or positions.
+
+
+library(dplyr)
+stocks <- data.frame(
+  time = as.Date('2009-01-01') + 0:9,
+  X = rnorm(10, 0, 1),
+  Y = rnorm(10, 0, 2),
+  Z = rnorm(10, 0, 4)
+)
+
+
+tidyr: spread() function
+======================================================
+  
+head(stocks, 5)
+stocksm <- stocks %>% gather(stock, price, -time)
+head(stocksm, 5)
+
+
+tidyr: spread() function
+======================================================
+  
+(newstocksm <- stocksm %>% spread(stock, price))
+
+
+
+tidyr: spread() function
+======================================================
+  
+(newstocksm <- stocksm %>% spread(time, price))
+
+
+
+tidyr: separate() function
+======================================================
+  Many times a single column variable will capture multiple variables, or even parts of a variable you just don’t care about.
+
+
+df = data.frame(Group=c(1,1,1,1,2,2), Year=c('2006_Jan', '2007_Aug', '2008_Nov', '2009_Jan', '2006_Feb', '2007_Jul'),
+                First_Last= c('George Washington', 'John Adams','Thomas Jefferson', 'James Madison', 'James Monroe', 'John Adams'),
+                income = c(2500, 3000, 2200, 1900, 4000, 5500))
+df
+
+
+tidyr: separate() function
+======================================================
+  
+df <- df %>% separate(First_Last, c("Firstname", "Lastname"))
+df <- df %>% separate(Year, c("Year", "Month"))
+head(df, 10)
+
+
+
+tidyr: unite() function
+======================================================
+  - There may be a time in which we would like to combine the values of two variables. 
+- The unite() function is a convenience function to paste together multiple variable values into one. - In essence, it combines two variables of a single observation into one variable.
+
+unite(data, col, ..., sep = " ", remove = TRUE)
+
+tidyr: unite() function
+======================================================
+  
+df <- df %>% unite(First_Last, Firstname, Lastname, sep=';')
+df <- df %>% unite(Year, Year, Month, sep="_")
+head(df, 10)
+
+
+Missing values
+========================================================
+  
+  - A missing value, represented by NA in R, is a placeholder for a datum of which the type is known
+but its value is not.
+- It is impossible to perform statistical analysis on data where one or more values in the data are missing. 
+- One may choose to either omit elements from a dataset that contain missing values or to impute a value, but missingness is something to be dealt with prior to any analysis.
+
+Missing values
+========================================================
+  
+age <- c(23, 16, NA)
+mean(age)
+mean(age, na.rm = TRUE)
+
+
+
+Missing values
+========================================================
+  - Functions such as sum, prod, quantile, sd and so on all have this option. 
+- Functions implementing bivariate statistics such as cor and cov offer options to include complete or
+pairwise complete values.
+- The complete.cases function detects rows in a matrix/data.frame that do not contain any missing value.
+- is.na function aslo detects NA values.
+
+Detecting missing values
+========================================================
+  
+mat <- matrix(c(1,2,NA,3,1,7,8,NA), nrow=4, ncol=2, byrow = T)
+mat
+complete.cases(mat)
+is.na(mat)
+
+
+Omitting missing values
+========================================================
+  - The resulting logical can be used to remove incomplete records from the matrix/data.frame.
+- Alternatively the na.omit function, does the same.
+
+mat <- matrix(c(1,2,NA,3,1,7,8,NA), nrow=4, ncol=2, byrow = T)
+ind <- complete.cases(mat)
+mat[ind,]
+na.omit(mat)
+
+
+Omitting missing values
+========================================================
+  - The row.names of the removed records are stored in an attribute called na.action.
+
+
+mat <- matrix(c(1,2,NA,3,1,7,8,NA), nrow=4, ncol=2, byrow = T)
+rownames(mat) <- c("samp1", "samp2", "samp3", "samp4")
+na.omit(mat)
+
+
+Omitting missing values
+========================================================
+  - It may happen that a missing value in a data set means 0 or Not applicable.
+- If that is the case, it should be explicitly imputed with that value, because it is not unknown, but was coded as empty.
+
+Imputing missing values
+========================================================
+  
+library(impute)
+data(khanmiss)
+dim(khanmiss)
+# head(khanmiss,3)
+colnames(khanmiss)[1:4]
+rownames(khanmiss) [1:4]
+
+
+Imputing missing values
+========================================================
+  
+khanmiss[1:3,1:4]
+khan.expr <- khanmiss[-1, -(1:2)]
+khan.expr[1:3,1:4]
+
+
+Imputing missing values
+========================================================
+  
+sum(is.na(khan.expr))
+khan.imputed <- impute.knn(as.matrix(khan.expr))
+sum(is.na(khan.imputed))
+
+
+Parameters in impute(.) function
+========================================================
+  
+  impute.knn(data, k = 10, rowmax = 0.5, colmax = 0.8, maxp = 1500, rng.seed=362436069)
+
+- data: An expression matrix with genes in the rows, samples in the columns
+- k: Number of neighbors to be used in the imputation (default=10)
+- rowmax: The maximum percent missing data allowed in any row (default 50%). For any
+- rows with more than rowmax% missing are imputed using the overall mean per
+sample.
+- colmax The maximum percent missing data allowed in any column (default 80%). If
+any column has more than colmax% missing data, the program halts and reports
+an error.
+- maxp: The largest block of genes imputed using the knn algorithm inside impute.knn
+(default 1500); larger blocks are divided by two-means clustering (recursively)
+prior to imputation. If maxp=p, only knn imputation is done.
+rng.
+- seed: The seed used for the random number generator (default 362436069) for reproducibility.
+
+Special values
+========================================================
+  - Numeric variables are endowed with several formalized special values including Inf, NA and NaN. 
+- Calculations involving special values often result in special values, and since a statistical statement about a real-world phenomenon should never include a special value, it is desirable to handle special values prior to analysis.
+- For numeric variables, special values indicate values that are not an element of the
+mathematical set of real numbers. The function is.finite determines which values are
+'regular' values.
+
+is.finite(c(1, Inf, NaN, NA))
+
+mat <- matrix(c(NaN,2,NA,3,1,7,8,Inf), nrow=4, ncol=2, byrow = T)
+is.finite(mat)
+
+
+Outliers
+========================================================
+-A general definition:
+-  An outlier in a data set as an observation (or set of observations) which appear to be inconsistent with that set of data.
+- Outliers do not equal errors. They should be detected, but not necessarily
+removed. Their inclusion in the analysis is a statistical decision.
+
+x <- c(1:10, 20, 30)
+boxplot.stats(x)$out
+
+
+Outliers
+========================================================
+
+Black dots are considered as outliers:
+
+***
+![Outliers in a sample box-plot](outlier_boxplot.png)
+
+Outliers
+========================================================
+
+# Inject outliers into data.
+cars1 <- cars[1:30, ]  # original data
+cars_outliers <- data.frame(speed=c(19,19,20,20,20), dist=c(190, 186, 210, 220, 218))  # introduce outliers.
+cars2 <- rbind(cars1, cars_outliers)  # data with outliers.
+
+
+
+Outliers
+========================================================
+See the ablines in these plots:
+
+***
+{r, echo=FALSE}
+# Plot of data with outliers.
+par(mfrow=c(1, 2))
+plot(cars2$speed, cars2$dist, xlim=c(0, 28), ylim=c(0, 230), main="With Outliers", xlab="speed", ylab="dist", pch="*", col="red", cex=2)
+abline(lm(dist ~ speed, data=cars2), col="blue", lwd=3, lty=2)
+
+# Plot of original data without outliers. Note the change in slope (angle) of best fit line.
+plot(cars1$speed, cars1$dist, xlim=c(0, 28), ylim=c(0, 230), main="Outliers removed \n A much better fit!", xlab="speed", ylab="dist", pch="*", col="red", cex=2)
+abline(lm(dist ~ speed, data=cars1), col="blue", lwd=3, lty=2)
+
+
+Outlier detection
+========================================================
+The "outliers" package provides a number of useful functions to systematically extract outliers. 
+One of these functions is outlier().
+
+
+library(outliers)
+set.seed(1234)
+y <- rnorm(100)
+outlier(y)
+dim(y) <- c(20,5)  # convert it to a matrix
+outlier(y)
+
+
+Outlier treatment
+========================================================
+Once the outliers are identified, you may rectify it by imputation/prediction: 
+- The outliers can be replaced with missing values NA and then can be predicted by considering them as a response variable.
+
+Removing duplication
+========================================================
+
+x <- c(1, 1, 4, 5, 4, 6)
+
+
+To find the position of duplicate elements in x, use this:
+
+duplicated(x)
+
+Extract duplicate elements:
+
+x[duplicated(x)]
+
+If you want to remove duplicated elements, use !duplicated(), where ! is a logical negation:
+
+x[!duplicated(x)]
+
+
+
+Removing duplication
+========================================================
+
+x <- matrix(c(1, 1, 4, 5, 4, 6, 1, 1, 4), nrow=3, ncol=3, byrow = T)
+x
+duplicated(x)
+x[!duplicated(x),]
+
+
+
+Removing duplication
+========================================================
+You can select the dimension for testing duplication:
+
+x <- matrix(c(1, 1, 4, 5, 5, 6, 1, 1, 4), nrow=3, ncol=3, byrow = T)
+x
+duplicated(x, MARGIN = 2)
+
+The default MARGIN is '1'.
+
+Removing duplication
+========================================================
+Applying unique function for a vector:
+
+x <- c(1, 1, 4, 5, 4, 6)
+unique(x)
+
+
+Removing duplication
+========================================================
+Applying unique function for a matrix in selected dimension:
+
+x <- matrix(c(1, 1, 4, 5, 4, 6, 1, 1, 4), nrow=3, ncol=3, byrow = T)
+unique(x)
+unique(x, MARGIN = 2)
+
+
+Removing duplication
+========================================================
+You can remove duplicates based on a specific columns/rows:
+
+x <- matrix(c(1, 1, 4, 5, 4, 6, 1, 1, 7), nrow=3, ncol=3, byrow = T)
+colnames(x) <- c("c1","c2", "c3")
+x
+x[!duplicated(x[,"c1"]), ]
+
+
+Normalization and scaling
+========================================================
+Sometimes it is useful to normalize the data prior to the main analysis.
+- Min-Max Normalization
+- Z-Score Standardization
+
+
+# Age vector
+age <- c(25, 35, 50)
+# Salary vector
+salary <- c(200000, 1200000, 2000000)
+# Data frame created using age and salary
+df <- data.frame( "Age" = age, "Salary" = salary, stringsAsFactors = FALSE)
+df
+
+
+Min-Max Normalization
+=======================================================
+- The formula for min-max normalization is $(X - min(X))/(max(X) - min(X))$.
+
+
+normalize <- function(x) { (x - min(x)) / (max(x) - min(x)) }
+x <- matrix(1:8, ncol = 2)
+x
+apply(x, 2, normalize)
+
+
+Z-score Standardization
+=======================================================
+- If there is a need for outliers to get weighted more than the other values, z-score standardization technique suits better.
+
+
+set.seed(1)
+x <- matrix(5:10, ncol = 2, byrow = T)
+# Manually scaling
+standardize <- function(x) {(x - mean(x)) / sd(x)}
+apply(x, 2, standardize)
+scale(x)
+
+
+
